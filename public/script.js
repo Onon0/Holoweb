@@ -10,28 +10,27 @@ const cameraSize = {
 
 const myPeer = new Peer()
 const myVideo = document.createElement('video')
-myVideo.width = cameraSize.w;
-myVideo.height = cameraSize.h;
+//myVideo.width = cameraSize.w;
+//myVideo.height = cameraSize.h;
 myVideo.muted = true
-myVideo.autoplay = true
+
 
 const peers = {}
 
 
 navigator.mediaDevices.getUserMedia({
     video:true,
-    audio:true
+    audio:false
 }).then(stream =>{
-    //addVideoStream(myVideo, stream)
+    addVideoStream(myVideo, stream)
     myVideo.srcObject = stream
     videoGrid.append(myVideo)
 
     myPeer.on('call', call=>{
         call.answer(stream)
         video = document.createElement('video')
-        video.width = cameraSize.w;
-        video.height = cameraSize.h;
-        video.autoplay = true;
+        //video.width = cameraSize.w;
+        //video.height = cameraSize.h;
         call.on('stream', userVideoStream=>{
             addVideoStream(video, userVideoStream)
         })
@@ -54,9 +53,8 @@ myPeer.on('open', id=>{
 function connectToNewUser(userId, stream){
     const call = myPeer.call(userId, stream)
     const video = document.createElement('video')
-    video.width = cameraSize.w;
-    video.height = cameraSize.h;
-    video.autoplay = true;
+    //video.width = cameraSize.w;
+    //video.height = cameraSize.h;
     call.on('stream', userVideoStream=>{
         addVideoStream(video, userVideoStream)
     })
@@ -68,8 +66,9 @@ function connectToNewUser(userId, stream){
 }
 function addVideoStream(video, stream){
     video.srcObject = stream
-  //video.addEventListener('loadedmetadata', () => {
-  //  video.play()
-  //})
+    video.addEventListener('loadedmetadata', () => {
+      video.play()
+      console.log("working? ")
+    })
   videoGrid.append(video)
 }
