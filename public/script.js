@@ -1,37 +1,61 @@
   
 const socket = io('/');
-const videoGrid = document.getElementById('asset')
-const scene = document.getElementById('scene')
-const myPeer = new Peer()
-const myVideo = document.createElement('video')
-myVideo.setAttribute('id', 'asset' + 10);
-var player = document.createElement("a-box");
-player.setAttribute('id', 10);
-player.setAttribute('position', '0 1.6 0');
-player.setAttribute('material', 'src: #asset' + 10);
+const videoGrid = document.getElementById('video-grid')
 
-myVideo.muted = false
+const myPeer = new Peer(undefined, {
+    host: '/',
+    port: '3001'
+})
+const myVideo = document.createElement('video')
+
+myVideo.muted = true
+
+const peers = {}
 
 navigator.mediaDevices.getUserMedia({
     video:true,
     audio:true
 }).then(stream =>{
-    addVideoStream(myVideo, stream, player)
+    addVideoStream(myVideo, stream)
+    
+    myPeer.on('call', call=>{
+        call.answer(stream)
+        video = document.createElement('video')
+        call.on('stream', userVideoStream=>{
+            addVideoStream(video, userVideoStream)
+        })
+    })
+
+    socket.on('user-connected', userId =>{
+        connectToNewUser(userId, stream)
+    })
+    
+})
+
+socket.on('user-disconnected', userId=>{
+    if(peers[userId]) peers[userId].close()
 })
 myPeer.on('open', id=>{
     socket.emit('join-room', ROOM_ID, id);
 
 })
 
-socket.on('user-connected', userId =>{
-    console.log('user connected ' + userId);
-})
+function connectToNewUser(userId, stream){
+    const call = myPeer.call(userId, stream)
+    const video = document.createElement('video')
+    call.on('stream', userVideoStream=>{
+        addVideoStream(video, userVideoStream)
+    })
+    call.on('close', ()=>{
+        video.remove()
+    })
 
-function addVideoStream(video, stream, player){
+    peers[userId] = call
+}
+function addVideoStream(video, stream){
     video.srcObject = stream
   video.addEventListener('loadedmetadata', () => {
     video.play()
   })
   videoGrid.append(video)
-  scene.append(player)
 }
