@@ -13,6 +13,7 @@ const myVideo = document.createElement('video')
 myVideo.width = cameraSize.w;
 myVideo.height = cameraSize.h;
 myVideo.muted = true
+myVideo.autoplay = true
 
 const peers = {}
 
@@ -28,6 +29,7 @@ navigator.mediaDevices.getUserMedia({
         video = document.createElement('video')
         video.width = cameraSize.w;
         video.height = cameraSize.h;
+        video.autoplay = true;
         call.on('stream', userVideoStream=>{
             addVideoStream(video, userVideoStream)
         })
@@ -52,6 +54,7 @@ function connectToNewUser(userId, stream){
     const video = document.createElement('video')
     video.width = cameraSize.w;
     video.height = cameraSize.h;
+    video.autoplay = true;
     call.on('stream', userVideoStream=>{
         addVideoStream(video, userVideoStream)
     })
@@ -63,8 +66,8 @@ function connectToNewUser(userId, stream){
 }
 function addVideoStream(video, stream){
     video.srcObject = stream
-  video.addEventListener('loadedmetadata', () => {
-    video.play()
-  })
+  //video.addEventListener('loadedmetadata', () => {
+  //  video.play()
+  //})
   videoGrid.append(video)
 }
