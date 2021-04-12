@@ -22,8 +22,10 @@ navigator.mediaDevices.getUserMedia({
     video:true,
     audio:true
 }).then(stream =>{
-    addVideoStream(myVideo, stream)
-    
+    //addVideoStream(myVideo, stream)
+    myVideo.srcObject = stream
+    videoGrid.append(myVideo)
+
     myPeer.on('call', call=>{
         call.answer(stream)
         video = document.createElement('video')
