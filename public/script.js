@@ -16,31 +16,44 @@ myVideo.muted = true
 
 
 const peers = {}
+navigator.getUserMedia = navigator.getUserMedia ||
+                         navigator.webkitGetUserMedia ||
+                         navigator.msGetUserMedia||
+                         navigator.mozGetUserMedia;
 
 
-navigator.mediaDevices.getUserMedia({
-    video:true,
-    audio:false
-}).then(stream =>{
-    addVideoStream(myVideo, stream)
-    myVideo.srcObject = stream
-    videoGrid.append(myVideo)
-
-    myPeer.on('call', call=>{
-        call.answer(stream)
-        video = document.createElement('video')
-        //video.width = cameraSize.w;
-        //video.height = cameraSize.h;
-        call.on('stream', userVideoStream=>{
-            addVideoStream(video, userVideoStream)
-        })
-    })
-
-    socket.on('user-connected', userId =>{
-        connectToNewUser(userId, stream)
-    })
+if(navigator.getUserMedia){
+    navigator.getUserMedia({
+        video:true,
+        audio:false
+    }, function(stream){
+        addVideoStream(myVideo, stream)
+        myVideo.srcObject = stream
+        videoGrid.append(myVideo)
     
-})
+        myPeer.on('call', call=>{
+            call.answer(stream)
+            video = document.createElement('video')
+            //video.width = cameraSize.w;
+            //video.height = cameraSize.h;
+            call.on('stream', userVideoStream=>{
+                addVideoStream(video, userVideoStream)
+            })
+        })
+    
+        socket.on('user-connected', userId =>{
+            connectToNewUser(userId, stream)
+        })
+    },
+    function(err) {
+        console.log("The following error occurred: " + err.name);
+     }
+
+    )
+}else{
+    console.log("getUserMedia not supported")
+}
+
 
 socket.on('user-disconnected', userId=>{
     if(peers[userId]) peers[userId].close()
@@ -66,9 +79,8 @@ function connectToNewUser(userId, stream){
 }
 function addVideoStream(video, stream){
     video.srcObject = stream
-    video.addEventListener('loadedmetadata', () => {
-      video.play()
-      console.log("working? ")
-    })
+    video.onloadedmetadata = function(e){
+        video.play()
+    }
   videoGrid.append(video)
 }
